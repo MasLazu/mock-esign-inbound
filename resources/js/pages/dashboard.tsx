@@ -1,12 +1,12 @@
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { z } from "zod"
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,40 +23,32 @@ export default function Dashboard() {
         file: z
             .any()
             .refine((file) => file instanceof File || (file && file.length > 0), {
-                message: "File is required.",
+                message: 'File is required.',
             })
             .refine((file) => file.size <= 5 * 1024 * 1024, {
-                message: "File size must be less than 5MB.",
+                message: 'File size must be less than 5MB.',
             })
             .refine((file) => ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type), {
-                message: "Only PDF, JPEG, and PNG files are allowed.",
+                message: 'Only PDF, JPEG, and PNG files are allowed.',
             }),
         application_code: z.string(),
         application_secret: z.string(),
-    })
+    });
 
-    const form = useForm<z.infer<typeof formSchema>>(
-        { mode: 'onBlur' },
-    )
+    const form = useForm<z.infer<typeof formSchema>>({ mode: 'onBlur' });
 
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
         setLoading(true);
         try {
             const formData = new FormData();
-            formData.append('File', data.file);
-            formData.append('DocumentDate', new Date().toISOString());
-            formData.append('Name', data.file.name);
-            formData.append('AdministratorId', '6314e175-1981-4663-9ab9-325e4de9e8e5');
-            formData.append('AdministratorRoleCode', 'document-administrator');
-            formData.append('DocumentCategoryId', '0196eb52-568f-73c3-8324-2e9588751be8');
+            formData.append('file', data.file);
+            formData.append('esign_url', data.esign_url);
+            formData.append('application_code', data.application_code);
+            formData.append('application_secret', data.application_secret);
 
-            await fetch(data.esign_url, {
+            await fetch('/api/esign/forward', {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'X-Application-Code': data.application_code,
-                    'X-Webhook-Secret': data.application_secret,
-                },
             });
         } finally {
             setLoading(false);
@@ -67,8 +59,7 @@ export default function Dashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                </div>
+                <div className="grid auto-rows-min gap-4 md:grid-cols-3"></div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -118,17 +109,14 @@ export default function Dashboard() {
                                 <FormItem>
                                     <FormLabel>Upload File</FormLabel>
                                     <FormControl>
-                                        <Input
-                                            type="file"
-                                            onChange={(e) => field.onChange(e.target.files?.[0])}
-                                        />
+                                        <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0])} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <Button type="submit" disabled={loading}>
-                            {loading ? "Submitting..." : "Submit"}
+                            {loading ? 'Submitting...' : 'Submit'}
                         </Button>
                     </form>
                 </Form>
