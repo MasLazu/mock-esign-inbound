@@ -45,8 +45,6 @@ class EsignForwardController extends Controller
         )->asMultipart()->post($validated['esign_url'], [
             'DocumentDate' => now()->toIso8601String(),
             'Name' => $file->getClientOriginalName(),
-            'AdministratorId' => '6314e175-1981-4663-9ab9-325e4de9e8e5',
-            'AdministratorRoleCode' => 'document-administrator',
             'DocumentCategoryId' => '0196eb52-568f-73c3-8324-2e9588751be8',
         ]);
 
